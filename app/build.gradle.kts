@@ -94,11 +94,19 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
-    // XMPP (Smack)
-    implementation("org.igniterealtime.smack:smack-android-extensions:4.4.6")
-    implementation("org.igniterealtime.smack:smack-tcp:4.4.6")
-    implementation("org.igniterealtime.smack:smack-im:4.4.6")
-    implementation("org.igniterealtime.smack:smack-sasl-provided:4.4.6")
+    // XMPP (Smack) - excluir xpp3_min duplicado
+    implementation("org.igniterealtime.smack:smack-android-extensions:4.4.6") {
+        exclude(group = "xpp3", module = "xpp3_min")
+    }
+    implementation("org.igniterealtime.smack:smack-tcp:4.4.6") {
+        exclude(group = "xpp3", module = "xpp3_min")
+    }
+    implementation("org.igniterealtime.smack:smack-im:4.4.6") {
+        exclude(group = "xpp3", module = "xpp3_min")
+    }
+    implementation("org.igniterealtime.smack:smack-sasl-provided:4.4.6") {
+        exclude(group = "xpp3", module = "xpp3_min")
+    }
 
     // OkHttp (para auth.todus.cu)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
