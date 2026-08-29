@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.jivesoftware.smack.AbstractXMPPConnection
 import org.jivesoftware.smack.ConnectionListener
 import org.jivesoftware.smack.SmackException
 import org.jivesoftware.smack.StanzaListener
@@ -21,7 +20,6 @@ import org.jivesoftware.smack.XMPPConnection
 import org.jivesoftware.smack.XMPPException
 import org.jivesoftware.smack.filter.MessageTypeFilter
 import org.jivesoftware.smack.filter.PresenceTypeFilter
-import org.jivesoftware.smack.filter.StanzaTypeFilter
 import org.jivesoftware.smack.packet.Message
 import org.jivesoftware.smack.packet.Presence
 import org.jivesoftware.smack.sasl.SASLAuthentication
@@ -31,7 +29,6 @@ import org.jivesoftware.smackx.chatstates.ChatState
 import org.jivesoftware.smackx.chatstates.packet.ChatStateExtension
 import org.jivesoftware.smackx.delay.packet.DelayInformation
 import org.jivesoftware.smackx.receipts.Receipt
-import org.jxmpp.jid.EntityBareJid
 import org.jxmpp.jid.JidCreate
 
 /**
@@ -95,13 +92,12 @@ class ToDusXmppClient(
     private var authenticatedPhoneNumber: String = ""
 
     // --- Flujo reactivo del estado de conexión ---
-    private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
+    private val _connectionState = MutableStateFlow(ConnectionState.Disconnected)
 
     /**
      * Flujo de solo lectura que emite el estado actual de la conexión XMPP.
-     * Valores posibles: [ConnectionState.DISCONNECTED], [ConnectionState.CONNECTING],
-     * [ConnectionState.CONNECTED], [ConnectionState.AUTHENTICATED],
-     * [ConnectionState.CLOSED], [ConnectionState.CONNECTION_ERROR]
+     * Valores posibles: [ConnectionState.Disconnected], [ConnectionState.Connecting],
+     * [ConnectionState.Connected], [ConnectionState.Error]
      */
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
@@ -139,7 +135,7 @@ class ToDusXmppClient(
     fun connect(phoneNumber: String, password: String): Result<Unit> {
         return try {
             Log.d(TAG, "Iniciando conexión XMPP a $host:$port")
-            _connectionState.value = ConnectionState.CONNECTING
+            _connectionState.value = ConnectionState.Connecting
 
             // --- Paso 1: Configurar mecanismo SASL PLAIN ---
             // ToDus no usa TLS, por lo que necesitamos forzar SASL PLAIN.
@@ -171,14 +167,14 @@ class ToDusXmppClient(
             // --- Paso 5: Conectar al servidor (bloqueante) ---
             conn.connect()
             Log.d(TAG, "Conexión TCP establecida con $host:$port")
-            _connectionState.value = ConnectionState.CONNECTED
+            _connectionState.value = ConnectionState.Connected
 
             // --- Paso 6: Autenticar con SASL PLAIN ---
             // En Smack, login(username, password) realiza la negociación SASL.
             // El username es solo la parte local del JID (número de teléfono).
             conn.login(phoneNumber, password)
             Log.d(TAG, "Autenticación SASL PLAIN exitosa para $phoneNumber")
-            _connectionState.value = ConnectionState.AUTHENTICATED
+            _connectionState.value = ConnectionState.Connected
 
             // --- Paso 7: Guardar credenciales para uso interno ---
             authenticatedPhoneNumber = phoneNumber
@@ -194,23 +190,23 @@ class ToDusXmppClient(
             Result.success(Unit)
         } catch (e: XMPPException.XMPPErrorException) {
             Log.e(TAG, "Error XMPP al conectar: ${e.xmppError?.condition}", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
             Result.failure(e)
         } catch (e: SmackException) {
             Log.e(TAG, "Error de Smack al conectar: ${e.message}", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
             Result.failure(e)
         } catch (e: java.io.IOException) {
             Log.e(TAG, "Error de E/S al conectar: ${e.message}", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
             Result.failure(e)
         } catch (e: InterruptedException) {
             Log.e(TAG, "Conexión interrumpida", e)
-            _connectionState.value = ConnectionState.DISCONNECTED
+            _connectionState.value = ConnectionState.Disconnected
             Result.failure(e)
         } catch (e: Exception) {
             Log.e(TAG, "Error inesperado al conectar: ${e.message}", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
             Result.failure(e)
         }
     }
@@ -220,7 +216,7 @@ class ToDusXmppClient(
      *
      * 1. Envía una presencia de tipo "unavailable" para notificar a los contactos
      * 2. Cierra la conexión XMPP
-     * 3. Emite estado [ConnectionState.DISCONNECTED]
+     * 3. Emite estado [ConnectionState.Disconnected]
      *
      * Este método es seguro de invocar incluso si no hay conexión activa.
      * Los errores se capturan silenciosamente para evitar excepciones.
@@ -228,7 +224,7 @@ class ToDusXmppClient(
     fun disconnect() {
         val conn = connection ?: run {
             Log.w(TAG, "disconnect() llamado sin conexión activa")
-            _connectionState.value = ConnectionState.DISCONNECTED
+            _connectionState.value = ConnectionState.Disconnected
             return
         }
 
@@ -252,7 +248,7 @@ class ToDusXmppClient(
         // Limpiar estado interno
         authenticatedPhoneNumber = ""
         connection = null
-        _connectionState.value = ConnectionState.DISCONNECTED
+        _connectionState.value = ConnectionState.Disconnected
     }
 
     /**
@@ -285,7 +281,7 @@ class ToDusXmppClient(
             Result.success(Unit)
         } catch (e: SmackException.NotConnectedException) {
             Log.e(TAG, "No conectado al enviar mensaje a $toJid", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
             Result.failure(e)
         } catch (e: InterruptedException) {
             Log.e(TAG, "Envío de mensaje interrumpido", e)
@@ -327,7 +323,7 @@ class ToDusXmppClient(
             Result.success(Unit)
         } catch (e: SmackException.NotConnectedException) {
             Log.e(TAG, "No conectado al enviar estado de chat", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
             Result.failure(e)
         } catch (e: InterruptedException) {
             Log.e(TAG, "Envío de estado de chat interrumpido", e)
@@ -373,7 +369,7 @@ class ToDusXmppClient(
             Result.success(Unit)
         } catch (e: SmackException.NotConnectedException) {
             Log.e(TAG, "No conectado al enviar confirmación de lectura", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
             Result.failure(e)
         } catch (e: InterruptedException) {
             Log.e(TAG, "Envío de confirmación interrumpido", e)
@@ -408,7 +404,7 @@ class ToDusXmppClient(
             Result.success(Unit)
         } catch (e: SmackException.NotConnectedException) {
             Log.e(TAG, "No conectado al enviar presencia", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
             Result.failure(e)
         } catch (e: InterruptedException) {
             Log.e(TAG, "Envío de presencia interrumpido", e)
@@ -610,22 +606,22 @@ class ToDusXmppClient(
 
         override fun connected(connection: XMPPConnection?) {
             Log.d(TAG, "Evento: conexión TCP establecida")
-            _connectionState.value = ConnectionState.CONNECTED
+            _connectionState.value = ConnectionState.Connected
         }
 
         override fun authenticated(connection: XMPPConnection?, resumed: Boolean) {
             Log.d(TAG, "Evento: autenticación exitosa (resumed=$resumed)")
-            _connectionState.value = ConnectionState.AUTHENTICATED
+            _connectionState.value = ConnectionState.Connected
         }
 
         override fun connectionClosed() {
             Log.d(TAG, "Evento: conexión cerrada normalmente")
-            _connectionState.value = ConnectionState.CLOSED
+            _connectionState.value = ConnectionState.Disconnected
         }
 
         override fun connectionClosedOnError(e: Exception?) {
             Log.e(TAG, "Evento: conexión cerrada por error: ${e?.message}", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
         }
 
         override fun reconnectingIn(seconds: Int) {
@@ -634,12 +630,12 @@ class ToDusXmppClient(
 
         override fun reconnectionSuccessful() {
             Log.d(TAG, "Evento: reconexión exitosa")
-            _connectionState.value = ConnectionState.CONNECTED
+            _connectionState.value = ConnectionState.Connected
         }
 
         override fun reconnectionFailed(e: Exception?) {
             Log.e(TAG, "Evento: reconexión fallida: ${e?.message}", e)
-            _connectionState.value = ConnectionState.CONNECTION_ERROR
+            _connectionState.value = ConnectionState.Error("Error de conexion")
         }
     }
 }

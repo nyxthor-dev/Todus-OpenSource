@@ -60,15 +60,21 @@ object XmppMessageMapper {
         // Mapear el cuerpo del mensaje, asignar cadena vacía si es null
         val messageBody = body ?: ""
 
+        // Construir JID del remitente (número@todus.cu)
+        val senderJid = "$senderPhone@todus.cu"
+        // Construir JID del destinatario (nuestro número@todus.cu)
+        val receiverJid = "${currentPhoneNumber}@todus.cu"
+
         return Message(
             id = domainMessageId,
             chatId = chatId,
+            senderJid = senderJid,
+            receiverJid = receiverJid,
             body = messageBody,
-            from = senderPhone,
-            isFromMe = isFromMe,
+            timestamp = timestamp,
             type = MessageType.TEXT,
             status = MessageStatus.DELIVERED,
-            timestamp = timestamp
+            isFromMe = isFromMe
         )
     }
 
