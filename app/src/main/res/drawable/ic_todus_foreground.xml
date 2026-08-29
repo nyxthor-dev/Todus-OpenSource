@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Fondo del icono: circulo azul ToDus -->
+    <path
+        android:fillColor="#0066CC"
+        android:pathData="M54,54m-40,0a40,40 0,1,1,80 0a40,40 0,1,1,-80 0" />
+
+    <!-- Letra T estilizada -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,32h48v8h-18v36h-12V40h-18z" />
+
+    <!-- Burbuja de chat pequena -->
+    <path
+        android:fillColor="#00A86B"
+        android:pathData="M72,62m-10,0a10,10 0,1,1,20 0a10,10 0,1,1,-20 0" />
+
+    <!-- Triangulo de la burbuja -->
+    <path
+        android:fillColor="#00A86B"
+        android:pathData="M76,70 L72,76 L80,76 Z" />
+</vector>
