@@ -53,6 +53,16 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // Split APK por ABI para reducir tamaño
+    splits {
+        abi {
+            isEnable = true
+            isUniversalApk = false
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
+    }
 }
 
 dependencies {
@@ -90,10 +100,8 @@ dependencies {
     implementation("org.igniterealtime.smack:smack-im:4.4.6")
     implementation("org.igniterealtime.smack:smack-sasl-provided:4.4.6")
 
-    // OkHttp + Retrofit (para API HTTP de toDus)
+    // OkHttp (para auth.todus.cu)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
     // Gson
     implementation("com.google.code.gson:gson:2.11.0")
