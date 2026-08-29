@@ -1,5 +1,6 @@
 package com.todus.messenger.ui.navigation
 
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,21 +15,10 @@ import com.todus.messenger.ui.screens.login.LoginScreen
 // Rutas de navegación selladas (sealed class)
 // ============================================================================
 
-/**
- * Rutas de navegación de la aplicación ToDus Messenger.
- *
- * Utiliza una clase sellada para garantizar que todas las pantallas
- * estén definidas en un solo lugar y sean seguras en tiempo de compilación.
- */
 sealed class Screen(val route: String) {
 
-    /** Pantalla principal: lista de chats (conversaciones). */
     data object ChatList : Screen(route = "chatlist")
 
-    /**
-     * Pantalla de chat individual con un contacto o grupo.
-     * @param chatId Identificador único del chat (JID del contacto o groupId).
-     */
     data class Chat(val chatId: String) : Screen(route = "chat/{chatId}") {
         fun createRoute(id: String): String = "chat/$id"
         companion object {
@@ -36,10 +26,8 @@ sealed class Screen(val route: String) {
         }
     }
 
-    /** Pantalla de selección de contactos para iniciar nuevo chat. */
     data object Contacts : Screen(route = "contacts")
 
-    /** Pantalla de login/conexión. */
     data object Login : Screen(route = "login")
 }
 
@@ -47,18 +35,6 @@ sealed class Screen(val route: String) {
 // Grafo de navegación principal
 // ============================================================================
 
-/**
- * Grafo de navegación principal de ToDus Messenger.
- *
- * Define las tres pantallas principales y las transiciones:
- * - ChatList → Chat (al hacer click en un chat)
- * - ChatList → Contacts (al presionar el FAB +)
- * - Contacts → Chat (al seleccionar un contacto)
- * - Chat → ChatList (al presionar atrás)
- * - Contacts → ChatList (al presionar atrás)
- *
- * @param navController Controlador de navegación de Compose.
- */
 @Composable
 fun ToDusNavGraph(
     navController: NavHostController
@@ -67,9 +43,6 @@ fun ToDusNavGraph(
         navController = navController,
         startDestination = Screen.Login.route
     ) {
-        // ----------------------------------------------------------------
-        // Pantalla: Login
-        // ----------------------------------------------------------------
         composable(route = Screen.Login.route) {
             LoginScreen(
                 onConnected = {
@@ -80,9 +53,6 @@ fun ToDusNavGraph(
             )
         }
 
-        // ----------------------------------------------------------------
-        // Pantalla: Lista de chats
-        // ----------------------------------------------------------------
         composable(route = Screen.ChatList.route) {
             ChatListScreen(
                 onNavigateToChat = { chatId ->
@@ -94,11 +64,8 @@ fun ToDusNavGraph(
             )
         }
 
-        // ----------------------------------------------------------------
-        // Pantalla: Chat individual
-        // ----------------------------------------------------------------
         composable(
-            route = Screen.Chat("{${Screen.Chat.ARG_CHAT_ID}}").route,
+            route = "chat/{chatId}",
             arguments = listOf(
                 navArgument(Screen.Chat.ARG_CHAT_ID) {
                     type = NavType.StringType
@@ -111,9 +78,6 @@ fun ToDusNavGraph(
             )
         }
 
-        // ----------------------------------------------------------------
-        // Pantalla: Selección de contactos
-        // ----------------------------------------------------------------
         composable(route = Screen.Contacts.route) {
             ContactSelectorScreen(
                 onContactSelected = { chatId ->

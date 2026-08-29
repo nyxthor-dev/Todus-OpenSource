@@ -67,5 +67,5 @@ fun Chat.toEntity(): ChatEntity = ChatEntity(
     unreadCount = unreadCount,
     isGroup = isGroup,
     isOnline = isOnline,
-    lastMessageStatus = lastMessageStatus?.name()
+    lastMessageStatus = lastMessageStatus?.name
 )

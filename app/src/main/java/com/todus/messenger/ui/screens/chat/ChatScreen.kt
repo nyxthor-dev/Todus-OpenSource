@@ -311,7 +311,7 @@ fun MessageBubble(message: Message) {
     }
 
     // Alineación horizontal según el remitente
-    val horizontalAlignment = if (isFromMe) Arrangement.End else Arrangement.Start
+    val horizontalAlignment = if (isFromMe) Alignment.End else Alignment.Start
 
     // ----------------------------------------------------------------------
     // Contenedor principal del mensaje (Row + Column anidados)

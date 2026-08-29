@@ -58,6 +58,9 @@
 # Smack Configuration: mantener los archivos de configuración de Smack
 -keep class org.jivesoftware.smack.SmackConfiguration { *; }
 
+# jxmpp: usado por Smack para JIDs y Resourceparts
+-keep class org.jxmpp.** { *; }
+
 # No eliminar clases enum de Smack
 -keepclassmembers enum org.jivesoftware.smack.** {
     **[] $VALUES;

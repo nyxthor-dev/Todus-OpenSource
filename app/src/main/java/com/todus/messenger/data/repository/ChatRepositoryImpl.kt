@@ -41,8 +41,6 @@ class ChatRepositoryImpl @Inject constructor(
     /**
      * Obtiene todos los chats de forma reactiva, ordenados por el momento
      * del último mensaje (los más recientes primero).
-     *
-     * @return Flujo reactivo con la lista de chats mapeados al dominio.
      */
     override fun getAllChats(): Flow<List<Chat>> {
         return chatDao.getAllChats().map { entities ->
@@ -52,24 +50,15 @@ class ChatRepositoryImpl @Inject constructor(
 
     /**
      * Obtiene un chat existente por su JID, o lo crea si no existe.
-     *
-     * Si el chat no se encuentra en la base de datos local, se crea
-     * uno nuevo usando [Chat.createFromJid] y se inserta en Room.
-     *
-     * @param jid JID del contacto (ej: "53XXXXXXXX@todus.cu").
-     * @param name Nombre a mostrar del chat.
-     * @return El chat existente o recién creado.
      */
     override suspend fun getOrCreateChat(jid: String, name: String): Chat =
         withContext(Dispatchers.IO) {
-            // Buscar el chat existente por su JID
             val existingChat = chatDao.getChatById(jid)
             if (existingChat != null) {
                 Log.d(TAG, "Chat existente encontrado: $jid")
                 return@withContext existingChat.toDomain()
             }
 
-            // No existe: crear un nuevo chat individual desde el JID
             val newChat = Chat.createFromJid(jid = jid, name = name)
             chatDao.insertChat(newChat.toEntity())
             Log.d(TAG, "Nuevo chat creado e insertado: $jid")
@@ -78,50 +67,42 @@ class ChatRepositoryImpl @Inject constructor(
 
     /**
      * Actualiza los datos del último mensaje de un chat.
-     *
-     * @param chatId Identificador del chat.
-     * @param lastMessage Texto del último mensaje.
-     * @param time Marca temporal del último mensaje (epoch millis).
-     * @param status Estado del último mensaje (opcional).
      */
     override suspend fun updateLastMessage(
         chatId: String,
         lastMessage: String,
         time: Long,
         status: MessageStatus?
-    ) = withContext(Dispatchers.IO) {
-        chatDao.updateLastMessage(
-            chatId = chatId,
-            lastMessage = lastMessage,
-            time = time,
-            status = status?.name()
-        )
+    ) {
+        withContext(Dispatchers.IO) {
+            chatDao.updateLastMessage(
+                chatId = chatId,
+                lastMessage = lastMessage,
+                time = time,
+                status = status?.name
+            )
+        }
         Log.d(TAG, "Último mensaje actualizado para el chat $chatId")
     }
 
     /**
-     * Marca un chat como leído, reiniciando el contador de mensajes
-     * no leídos a cero.
-     *
-     * @param chatId Identificador del chat a marcar como leído.
+     * Marca un chat como leído, reiniciando el contador de mensajes no leídos a cero.
      */
-    override suspend fun markAsRead(chatId: String) = withContext(Dispatchers.IO) {
-        chatDao.markAsRead(chatId)
+    override suspend fun markAsRead(chatId: String) {
+        withContext(Dispatchers.IO) {
+            chatDao.markAsRead(chatId)
+        }
         Log.d(TAG, "Chat $chatId marcado como leído")
     }
 
     /**
      * Elimina un chat y todos sus mensajes asociados.
-     *
-     * Primero elimina los mensajes del chat y luego el chat en sí.
-     *
-     * @param chatId Identificador del chat a eliminar.
      */
-    override suspend fun deleteChat(chatId: String) = withContext(Dispatchers.IO) {
-        // Eliminar primero los mensajes asociados al chat
-        messageDao.deleteChatMessages(chatId)
-        // Luego eliminar el chat
-        chatDao.deleteChat(chatId)
+    override suspend fun deleteChat(chatId: String) {
+        withContext(Dispatchers.IO) {
+            messageDao.deleteChatMessages(chatId)
+            chatDao.deleteChat(chatId)
+        }
         Log.d(TAG, "Chat $chatId y sus mensajes eliminados")
     }
 }
