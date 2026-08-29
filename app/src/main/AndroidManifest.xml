@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Manifest de la aplicación ToDus Messenger.
+
+    Define la aplicación, la actividad principal, y los permisos necesarios
+    para el funcionamiento del mensajero sobre el protocolo XMPP de ToDus.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ================================================================== -->
+    <!-- PERMISOS DE LA APLICACIÓN                                            -->
+    <!-- ================================================================== -->
+
+    <!-- Acceso a Internet: obligatorio para la conexión XMPP con todus.cu -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Estado de red: para detectar conectividad y reconectar automáticamente -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Servicio en primer plano: para mantener la conexión XMPP activa -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- Notificaciones: para mostrar alertas de mensajes nuevos -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Lectura de contactos: para sugerir contactos de la agenda -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <!-- ================================================================== -->
+    <!-- APLICACIÓN                                                          -->
+    <!-- ================================================================== -->
+
+    <application
+        android:name=".ToDusMessengerApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.TodusMessenger"
+        tools:targetApi="34">
+
+        <!-- ============================================================ -->
+        <!-- ACTIVIDAD PRINCIPAL                                            -->
+        <!-- ============================================================ -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.TodusMessenger">
+
+            <!-- Intent filter para que esta actividad sea el punto de entrada -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ToDus Messenger</string>
+    <string name="chat_list_title">ToDus</string>
+    <string name="search_chats">Buscar chat...</string>
+    <string name="no_chats">No hay conversaciones</string>
+    <string name="new_chat">Nuevo chat</string>
+    <string name="search_contacts">Buscar contacto...</string>
+    <string name="no_contacts">No se encontraron contactos</string>
+    <string name="invite_contact">Invitar</string>
+    <string name="message_hint">Escribe un mensaje...</string>
+    <string name="online">En línea</string>
+    <string name="offline">Desconectado</string>
+    <string name="message_deleted">Mensaje eliminado</string>
+    <string name="message_edited">editado</string>
+    <string name="not_todus_user">Este contacto no usa ToDus</string>
+    <string name="connecting">Conectando...</string>
+    <string name="connection_error">Error de conexión</string>
+    <string name="send_failed">Error al enviar</string>
+</resources>
